@@ -20,6 +20,8 @@ operations = {
     7: ("eq", lambda l: int(operator.eq(*l))),
 }
 
+operations.update({v[0]: v for v in operations.values()})
+
 
 def byte_array_to_int(array):
     result = 0
@@ -101,8 +103,14 @@ class Parser:
         operand_spec, offset = parse_bits(packet, offset, 1)
         param, offset = subpacket_length() if operand_spec else bits_length()
         operands, offset = parse_fs[operand_spec](param, offset)
-        result = f(operands)
-        return result, offset
+        return (name, *operands), offset
+
+
+def evaluate(expression):
+    if not isinstance(expression, tuple):
+        return expression
+    name, f = operations[expression[0]]
+    return f([evaluate(p) for p in expression[1:]])
 
 
 def read_file(path):
@@ -122,14 +130,16 @@ def read_file(path):
 
     return packets, lines
 
+
 def main():
     packets, lines = read_file(sys.argv[1])
     
     for packet in packets:
         parser = Parser()
         print(f"{byte_array_to_int(packet):0x}")
-        result, offset = parser.parse_packet(packet)
-        print(f"RESULT={result}")
+        expression, offset = parser.parse_packet(packet)
+        print(f"EXPR={expression}")
+        print(f"RESULT={evaluate(expression)}")
         print(f"VERSION SUM={parser.sum}")
         print()
 
