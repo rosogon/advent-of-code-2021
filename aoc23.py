@@ -21,6 +21,10 @@ energy_point = { A: 1, B: 10, C: 100, D: 1000 }
 
 
 GREEN = "\033[1;32m"
+BLUE = "\033[1;44m"
+REV_GREEN = "\033[97;42m"
+REV_DIM_BLUE = "\033[97;44m"
+REV_BLUE = "\033[97;104m"
 NORMAL = "\033[1;0m"
 
 
@@ -219,23 +223,24 @@ class Map:
     def __repr__(self):
         return f"H={self.hallway} T={self.home}"
 
-    def print(self, state, road=None, highlight=None):
+    def print(self, state, road=None, highlight=None, row=None):
         def color(s, color):
             return color + s + NORMAL
 
         if road is None:
             road = ()
 
-        for i in range(0, len(self.lines)):
+        range_i = (row, row + 1) if row is not None else (0, len(self.lines))
+        for i in range(*range_i):
             for j in range(0, len(self.lines[0])):
                 p = Pos(i, j)
                 a = state.positions.get(p)
                 if p in road:
-                    ch = color("-", GREEN)
+                    ch = color(" ", REV_BLUE)
                 elif a is not None:
                     ch = a.kind if a.at_home else a.kind.lower()
                     if p == highlight:
-                        ch = color(ch, GREEN)
+                        ch = color(ch, REV_DIM_BLUE)
                 elif p in self.hallway:
                     ch = "."
                 elif any(p in home for home in self.home.values()):
@@ -243,8 +248,10 @@ class Map:
                 else:
                     ch = W
                 print(ch, end="")
-            print()
-        print(f"Cost={state.cost}")
+            if row is None:
+                print()
+        if row is None:
+            print(f"Cost={state.cost}")
 
 
 def solve(m, state):
@@ -276,17 +283,42 @@ def solve(m, state):
     return result, best_path
 
 
+#def print_path(path, m):
+#    
+#    prev = path[0]
+#    m.print(prev)
+#    for state in path[1:]:
+#        p1 = next(a for a in prev.positions if a not in state.positions)
+#        p2 = next(a for a in state.positions if a not in prev.positions)
+#        road = list(state.road(state.positions[p2], p1, m))
+#        m.print(state, road, p2)
+#        print("-" * 10)
+#        prev = state
+
+
 def print_path(path, m):
-    
-    prev = path[0]
-    m.print(prev)
-    for state in path[1:]:
-        p1 = next(a for a in prev.positions if a not in state.positions)
-        p2 = next(a for a in state.positions if a not in prev.positions)
-        road = list(state.road(state.positions[p2], p1, m))
-        m.print(state, road, p2)
-        print("-" * 10)
-        prev = state
+    N = 5
+    n_rows = len(m.lines)
+    for group in range(len(path) // N + 1):
+        for row in range(0, n_rows):
+            for group_idx in range(N):
+                path_idx = group * N + group_idx
+                if path_idx >= len(path):
+                    continue
+                state = path[path_idx]
+                prev = path[path_idx - 1] if path_idx > 0 else path[0]
+                p1 = next((a for a in prev.positions if a not in state.positions), None)
+                p2 = next((a for a in state.positions if a not in prev.positions), None)
+                if p2 is not None and p1 is not None:
+                    road = list(state.road(state.positions[p2], p1, m))
+                else:
+                    road = None
+                m.print(state, road=road, highlight=p2, row=row)
+                print(" " * 3, end="")
+            print()
+        print()
+    print()
+
 
 def is_amphipod(ch):
     return A <= ch <= D
@@ -327,6 +359,7 @@ def main():
         m.print(state)
         cost, path = solve(m, state)
         print_path(path, m)
+        print(f"Result: {cost}")
 
 
 if __name__ == "__main__":
