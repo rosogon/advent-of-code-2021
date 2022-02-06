@@ -136,11 +136,11 @@ def main():
     
     for packet in packets:
         parser = Parser()
-        print(f"{byte_array_to_int(packet):0x}")
+        #print(f"{byte_array_to_int(packet):0x}")
         expression, offset = parser.parse_packet(packet)
-        print(f"EXPR={expression}")
-        print(f"RESULT={evaluate(expression)}")
+        #print(f"EXPR={expression}")
         print(f"VERSION SUM={parser.sum}")
+        print(f"RESULT={evaluate(expression)}")
         print()
 
 

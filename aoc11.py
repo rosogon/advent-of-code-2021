@@ -4,6 +4,9 @@ from typing import NamedTuple
 
 MAX_ENERGY = 9
 
+verbose = False
+
+
 class Pos(NamedTuple):
     row: int
     col: int
@@ -96,7 +99,7 @@ def main():
     p = Pos(0, 1)
 
     m = read_file(sys.argv[1])
-    n = int(sys.argv[2])
+    n = int(100 if len(sys.argv) <= 2 else sys.argv[2])
     total_flashes = 0
     all_flashed = 0
     step = 0
@@ -107,8 +110,9 @@ def main():
             total_flashes += flashes
         if flashes == len(m):
             all_flashed = step
-        m.print()
-        print()
+        if verbose:
+            m.print()
+            print()
 
     print(f"Number of flashes after step {n}: {total_flashes}")
     print(f"All fish flashed after step {all_flashed}")

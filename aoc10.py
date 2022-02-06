@@ -2,6 +2,8 @@ import sys
 from collections import deque
 
 
+verbose = False
+
 open_tokens = {
     "(" : ")",
     "[" : "]",
@@ -69,13 +71,15 @@ class Parser:
                 last_tok = queue.pop()
                 if close_tokens[tok] != last_tok:
                     expected = open_tokens[last_tok]
-                    print(f"Expected {expected} but found {tok} instead")
+                    if verbose:
+                        print(f"Expected {expected} but found {tok} instead")
                     return error_scores[tok], 0
             else:
                 pass
                 
         if queue:
-            print(f"Incomplete: {queue}")
+            if verbose: 
+                print(f"Incomplete: {queue}")
             return 0, self._get_completion_score(queue)           
         return 0, 0
 

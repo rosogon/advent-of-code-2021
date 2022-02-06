@@ -45,18 +45,18 @@ def next_day_3(timers):
     return timers
 
 
+def run(timers, n):
+    timers = [timers[i] for i in range(0, 9)]
+    for i in range(n):
+        timers = next_day_3(timers)
+    return timers
+
 def main():
     debug = False
     timers = read_file(sys.argv[1])
     
-##    for i in range(1, int(sys.argv[2]) + 1):
-##        timers = next_day_2(timers)
-##    print(sum(timers.values()))
-
-    timers = [timers[i] for i in range(0, 9)]
-    for i in range(0, int(sys.argv[2])):
-        timers = next_day_3(timers)
-    print(sum(timers))
+    print(sum(run(timers, 80)))
+    print(sum(run(timers, 256)))
     
           
 if __name__ == "__main__":
